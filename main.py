@@ -40,7 +40,7 @@ async def handler(event):
 
 async def main():
     await client.start(phone_number)
-    print("Бот запущений!")
+    print("Клієнт запущений!")
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
