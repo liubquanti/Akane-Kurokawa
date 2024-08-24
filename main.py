@@ -1,7 +1,7 @@
 import asyncio
 import random
 from telethon import TelegramClient, events, functions
-from config import api_id, api_hash, phone_number, char_id, charai_token
+from config import api_id, api_hash, phone_number, char_id, charai_token, tg_id
 from characterai import aiocai
 
 client = TelegramClient('session_name', api_id, api_hash)
@@ -19,24 +19,25 @@ async def get_character_ai_response(message_text):
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
 
-    await asyncio.sleep(random.randint(1, 5))
+    if event.sender_id == tg_id:
+        await asyncio.sleep(random.randint(1, 5))
+        message = event.message.text
+        await event.message.mark_read()
+        await asyncio.sleep(len(message) * 0.03 + 1)
+        response_text = await get_character_ai_response(message)
+        async with client.action(event.chat_id, 'typing'):
+            await asyncio.sleep(len(response_text) * 0.1 + 1)
+        await event.reply(response_text)
+        await asyncio.sleep(random.randint(1, 5))
+        await client(functions.account.UpdateStatusRequest(offline=True))
 
-    message = event.message.text
-
-    await event.message.mark_read()
-
-    await asyncio.sleep(len(message) * 0.03 + 1)
-
-    response_text = await get_character_ai_response(message)
-
-    async with client.action(event.chat_id, 'typing'):
-        await asyncio.sleep(len(response_text) * 0.1 + 1)
-
-    await event.reply(response_text)
-
-    await asyncio.sleep(random.randint(1, 5))
-
-    await client(functions.account.UpdateStatusRequest(offline=True))
+    else:
+        await asyncio.sleep(random.randint(1, 5))
+        await client(functions.account.UpdateStatusRequest(offline=False))
+        await asyncio.sleep(random.randint(1, 3))
+        await event.message.mark_read()
+        await asyncio.sleep(random.randint(3, 5))
+        await client(functions.account.UpdateStatusRequest(offline=True))
 
 async def main():
     await client.start(phone_number)

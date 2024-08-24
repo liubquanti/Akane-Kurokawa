@@ -14,4 +14,5 @@ api_hash = ''
 phone_number = ''
 charai_token = ''
 char_id = 'zQ7Yav1HdV_MzCUsXRaKbeVZuEoLOvlpXn2pSKr-LEU'
+tg_id = 
 ```
