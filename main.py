@@ -1,51 +1,47 @@
-from telethon import TelegramClient, events, functions, types
 import asyncio
 import random
-from config import api_id, api_hash, phone_number
+from telethon import TelegramClient, events, functions
+from config import api_id, api_hash, phone_number, char_id, charai_token
+from characterai import aiocai
 
-# Ініціалізуємо клієнта
 client = TelegramClient('session_name', api_id, api_hash)
 
-# Обробник подій для нового повідомлення
+characterai_client = aiocai.Client(charai_token)
+
+async def get_character_ai_response(message_text):
+    me = await characterai_client.get_me()
+
+    async with await characterai_client.connect() as chat:
+        new_chat, answer = await chat.new_chat(char_id, me.id)
+        response = await chat.send_message(char_id, new_chat.chat_id, message_text)
+        return response.text
+
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
-    await asyncio.sleep(random.randint(1, 10))
-    message = event.message.text.lower()
 
-    # Позначаємо повідомлення як прочитане
+    await asyncio.sleep(random.randint(1, 5))
+
+    message = event.message.text
+
     await event.message.mark_read()
 
-    await asyncio.sleep(len(message) * 0.1 + 4)
-        
-        # Перевіряємо, чи є повідомлення привітанням
-    if "привіт" in message or "здравствуйте" in message or "добрий день" in message:
+    await asyncio.sleep(len(message) * 0.03 + 1)
 
-        async with client.action(event.chat_id, 'typing'):
-            
-            await asyncio.sleep(random.randint(1, 5))
+    response_text = await get_character_ai_response(message)
 
-        await event.reply("Привіт! Як я можу допомогти?")
+    async with client.action(event.chat_id, 'typing'):
+        await asyncio.sleep(len(response_text) * 0.1 + 1)
 
-        await asyncio.sleep(random.randint(5, 10))
+    await event.reply(response_text)
 
-        await client(functions.account.UpdateStatusRequest(
-            offline=True
-        ))
+    await asyncio.sleep(random.randint(1, 5))
 
-    else:
+    await client(functions.account.UpdateStatusRequest(offline=True))
 
-        await asyncio.sleep(random.randint(1, 5))
-        
-        await client(functions.account.UpdateStatusRequest(
-            offline=True
-        ))
-
-# Запускаємо клієнта
 async def main():
     await client.start(phone_number)
     print("Бот запущений!")
     await client.run_until_disconnected()
 
-# Запускаємо асинхронний основний метод
 if __name__ == '__main__':
     asyncio.run(main())
