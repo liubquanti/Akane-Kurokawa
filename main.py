@@ -1,25 +1,46 @@
 import asyncio
 import random
+import config
 from telethon import TelegramClient, events, functions
-from config import api_id, api_hash, phone_number, char_id, charai_token, tg_id
 from characterai import aiocai
 
-client = TelegramClient('session_name', api_id, api_hash)
+client = TelegramClient('session_name', config.api_id, config.api_hash)
+characterai_client = aiocai.Client(config.charai_token)
 
-characterai_client = aiocai.Client(charai_token)
+previous_chat_id = config.previous_chat_id
 
 async def get_character_ai_response(message_text):
+    global previous_chat_id
     me = await characterai_client.get_me()
 
     async with await characterai_client.connect() as chat:
-        new_chat, answer = await chat.new_chat(char_id, me.id)
-        response = await chat.send_message(char_id, new_chat.chat_id, message_text)
+        if previous_chat_id:
+            response = await chat.send_message(config.char_id, previous_chat_id, message_text)
+        else:
+            new_chat, answer = await chat.new_chat(config.char_id, me.id)
+            previous_chat_id = new_chat.chat_id
+
+            update_config_file('previous_chat_id', previous_chat_id)
+
+            response = await chat.send_message(config.char_id, previous_chat_id, message_text)
+
         return response.text
+
+def update_config_file(key, value):
+    """Функція для оновлення змінної в файлі config.py."""
+    with open('config.py', 'r') as file:
+        lines = file.readlines()
+
+    with open('config.py', 'w') as file:
+        for line in lines:
+            if line.startswith(key):
+                file.write(f"{key} = '{value}'\n")
+            else:
+                file.write(line)
 
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
-
-    if event.sender_id == tg_id:
+    if event.sender_id == config.tg_id:
         await asyncio.sleep(random.randint(1, 5))
         message = event.message.text
         await event.message.mark_read()
@@ -30,7 +51,6 @@ async def handler(event):
         await event.reply(response_text)
         await asyncio.sleep(random.randint(1, 5))
         await client(functions.account.UpdateStatusRequest(offline=True))
-
     else:
         await asyncio.sleep(random.randint(1, 5))
         await client(functions.account.UpdateStatusRequest(offline=False))
@@ -40,7 +60,7 @@ async def handler(event):
         await client(functions.account.UpdateStatusRequest(offline=True))
 
 async def main():
-    await client.start(phone_number)
+    await client.start(config.phone_number)
     print("Клієнт запущений!")
     await client.run_until_disconnected()
 
