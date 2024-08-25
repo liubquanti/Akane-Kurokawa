@@ -78,3 +78,5 @@ asyncio.run(main())
 ```ps
 python main.py
 ```
+## 📊 • Статистика розробки
+![Alt](https://repobeats.axiom.co/api/embed/fda3f005853183dab0b6eece94065f014b4642a5.svg "Repobeats analytics image")
