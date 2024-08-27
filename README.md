@@ -6,39 +6,12 @@
 
 ## 📄 • Документація
 Репозиторій має [вікі](https://github.com/liubquanti/Akane-Kurokawa/wiki) з інструкцією різними мовами для підготовки середовища до виконання програми.
-<table>
-<tr>
-<th align="center" width="200">
-<img height="1">
-<p> 
-<img src="https://flagdownload.com/wp-content/uploads/Flag_of_Ukraine_Flat_Round_Corner-64x64.png">
-</p>
-</th>
-<th align="center" width="200">
-<img height="1">
-<p> 
-<img src="https://flagdownload.com/wp-content/uploads/Flag_of_United_Kingdom_Flat_Round_Corner-64x64.png">
-</p>
-</th>
-<th align="center" width="200">
-<img height="1">
-<p> 
-<img src="https://flagdownload.com/wp-content/uploads/Flag_of_France_Flat_Round_Corner-64x64.png">
-</p>
-</th>
-</tr>
-<tr align="center">
-<td>
-<a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/%D0%94%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D1%96%D1%8F-%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" >Документація Українською</a>
-</td>
-<td>
-<a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/Documentation-In-English" >Documentation In English</a>
-</td>
-<td>
-<a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/Documentation-En-Fran%C3%A7ais" >Documentation En Français</a>
-</td>
-</tr>
-</table>
+
+<img src="https://flagdownload.com/wp-content/uploads/Flag_of_Ukraine_Flat_Round_Corner-64x64.png" width="20"> <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/%D0%94%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D1%96%D1%8F-%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" >Документація Українською</a>
+
+<img src="https://flagdownload.com/wp-content/uploads/Flag_of_United_Kingdom_Flat_Round_Corner-64x64.png" width="20"> <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/Documentation-In-English" >Documentation In English</a>
+
+<img src="https://flagdownload.com/wp-content/uploads/Flag_of_France_Flat_Round_Corner-64x64.png" width="20"> <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/Documentation-En-Fran%C3%A7ais" >Documentation En Français</a>
 
 ## 📊 • Статистика розробки
 
