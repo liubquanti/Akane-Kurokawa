@@ -9,19 +9,19 @@
 <table>
 <tr>
 <th align="center">
-<img width="294" height="1">
+<img width="100" height="1">
 <p> 
 <img src="https://flagdownload.com/wp-content/uploads/Flag_of_Ukraine_Flat_Round_Corner-64x64.png">
 </p>
 </th>
 <th align="center">
-<img width="294" height="1">
+<img width="100" height="1">
 <p> 
 <img src="https://flagdownload.com/wp-content/uploads/Flag_of_United_Kingdom_Flat_Round_Corner-64x64.png">
 </p>
 </th>
 <th align="center">
-<img width="294" height="1">
+<img width="100" height="1">
 <p> 
 <img src="https://flagdownload.com/wp-content/uploads/Flag_of_France_Flat_Round_Corner-64x64.png">
 </p>
@@ -39,7 +39,8 @@
 </td>
 </tr>
 </table>
-
+<style>
+</style>
 ## 📊 • Статистика розробки
 
 ![Alt](https://repobeats.axiom.co/api/embed/fda3f005853183dab0b6eece94065f014b4642a5.svg "Repobeats analytics image")
