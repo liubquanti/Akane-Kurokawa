@@ -9,19 +9,19 @@
 <table>
 <tr>
 <th align="center">
-<img width="441" height="1">
+<img width="294" height="1">
 <p> 
 <img src="https://flagdownload.com/wp-content/uploads/Flag_of_Ukraine_Flat_Round_Corner-64x64.png">
 </p>
 </th>
 <th align="center">
-<img width="441" height="1">
+<img width="294" height="1">
 <p> 
 <img src="https://flagdownload.com/wp-content/uploads/Flag_of_United_Kingdom_Flat_Round_Corner-64x64.png">
 </p>
 </th>
 <th align="center">
-<img width="441" height="1">
+<img width="294" height="1">
 <p> 
 <img src="https://flagdownload.com/wp-content/uploads/Flag_of_France_Flat_Round_Corner-64x64.png">
 </p>
