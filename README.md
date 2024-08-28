@@ -7,9 +7,9 @@
 ## 📄 • Документація
 Репозиторій має [вікі](https://github.com/liubquanti/Akane-Kurokawa/wiki) з інструкцією різними мовами для підготовки середовища до виконання програми.
 
-- <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/%D0%94%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D1%96%D1%8F-%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" >Документація Українською</a>
-- <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/Documentation-In-English" >Documentation In English</a>
-- <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/Documentation-En-Fran%C3%A7ais" >Documentation En Français</a>
+- 🇺🇦 <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/%D0%94%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D1%96%D1%8F-%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" >Документація Українською</a>
+- 🇬🇧 <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/Documentation-In-English" >Documentation In English</a>
+- 🇫🇷 <a href="https://github.com/liubquanti/Akane-Kurokawa/wiki/Documentation-En-Fran%C3%A7ais" >Documentation En Français</a>
 
 ## 📊 • Статистика розробки
 
