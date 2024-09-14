@@ -3,6 +3,7 @@ import random
 import config
 from telethon import TelegramClient, events, functions
 from characterai import aiocai
+from colorama import Fore
 
 client = TelegramClient('session_name', config.api_id, config.api_hash)
 characterai_client = aiocai.Client(config.charai_token)
@@ -38,20 +39,20 @@ async def handler(event):
         await asyncio.sleep(random.randint(1, 5))
         message = event.message.text
         await event.message.mark_read() 
-        print (f"[MSG] Oleh: {message}")
+        print (f"{Fore.BLUE}[MSG] Oleh: {message}{Fore.RESET}")
         rtime = len(message) * 0.03
         await asyncio.sleep(rtime)
-        print (f"[LOG] Час читання: {rtime:.2f}")
+        print (f"{Fore.YELLOW}[LOG] Час читання: {rtime:.2f}{Fore.RESET}")
         response_text = await get_character_ai_response(message)
         async with client.action(event.chat_id, 'typing'):
             ttime = len(response_text) * 0.1
             await asyncio.sleep(ttime)
-        print (f"[LOG] Час написання: {ttime:.2f}")
+        print (f"{Fore.YELLOW}[LOG] Час написання: {ttime:.2f}{Fore.RESET}")
         if random.random() < 0.25:
             await event.reply(response_text)
         else:
             await client.send_message(event.chat_id, response_text)
-        print (f"[MSG] Akane: {response_text}")
+        print (f"{Fore.BLUE}[MSG] Akane: {response_text}{Fore.RESET}")
         await asyncio.sleep(random.randint(1, 5))
         await client(functions.account.UpdateStatusRequest(offline=True))
     else:
@@ -59,13 +60,13 @@ async def handler(event):
         await client(functions.account.UpdateStatusRequest(offline=False))
         await asyncio.sleep(random.randint(1, 3))
         await event.message.mark_read()
-        print(f"[WRN] Користувач {event.sender_id} намагався написати!")
+        print(f"{Fore.RED}[WRN] Користувач {event.sender_id} намагався написати!{Fore.RESET}")
         await asyncio.sleep(random.randint(3, 5))
         await client(functions.account.UpdateStatusRequest(offline=True))
 
 async def main():
     await client.start(config.phone_number)
-    print("[LOG] Клієнт запущений!")
+    print(f"{Fore.YELLOW}[LOG] Клієнт запущений!{Fore.RESET}")
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
