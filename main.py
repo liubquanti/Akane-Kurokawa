@@ -69,9 +69,6 @@ async def handler(event):
         await asyncio.sleep(random.randint(1, 3))
         await event.message.mark_read()
         print(f"{Fore.RED}[WRN] Користувач {event.sender_id} намагався написати!{Fore.RESET}")
-        await asyncio.sleep(random.randint(3, 5))
-        await client(functions.account.UpdateStatusRequest(offline=True))
-        await asyncio.sleep(random.randint(1, 5))
 
         message = event.message.text
         print(f"{Fore.RED}[WRN] {event.sender_id}: {message}{Fore.RESET}")
