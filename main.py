@@ -10,7 +10,6 @@ from fanblock import fans_ids
 client = TelegramClient('session_name', config.api_id, config.api_hash)
 characterai_client = aiocai.Client(config.charai_token)
 characterai_client_unk = aiocai.Client(config.charai_token_unk)
-
 previous_chat_id = config.previous_chat_id
 
 async def get_character_ai_response(message_text):
@@ -26,7 +25,7 @@ async def get_character_ai_response(message_text):
             response = await chat.send_message(config.char_id, previous_chat_id, message_text)
         return response.text
     
-async def get_character_ai_response_denied(message_text):
+async def get_character_ai_response_unk(message_text):
     me = await characterai_client_unk.get_me()
     async with await characterai_client_unk.connect() as chat:
         new_chat, answer = await chat.new_chat(config.char_id, me.id)
@@ -98,7 +97,7 @@ async def handler(event):
             message = 'Imagine that a fan has written to you a message: "%s", but you don\'t want to communicate with them, write a text for reply send me just a text of reply, nothing else' % translated_message
             await event.message.mark_read()
             await asyncio.sleep(len(message) * 0.03 + 1)
-            response_text = await get_character_ai_response_denied(message)
+            response_text = await get_character_ai_response_unk(message)
             async with client.action(event.chat_id, 'typing'):
                 await asyncio.sleep(len(response_text) * 0.1 + 1)
             await event.reply(response_text)
