@@ -4,7 +4,6 @@ import config
 from telethon import TelegramClient, events, functions
 from characterai import aiocai
 from colorama import Fore
-from googletrans import Translator
 from fanblock import fans_ids
 
 client = TelegramClient('session_name', config.api_id, config.api_hash)
@@ -24,7 +23,7 @@ async def get_character_ai_response(message_text):
             update_config_file('previous_chat_id', previous_chat_id)
             response = await chat.send_message(config.char_id, previous_chat_id, message_text)
         return response.text
-    
+
 async def get_character_ai_response_unk(message_text):
     me = await characterai_client_unk.get_me()
     async with await characterai_client_unk.connect() as chat:
@@ -90,11 +89,7 @@ async def handler(event):
             print(f"{Fore.RED}[WRN] Користувач {event.sender_id} намагався написати!{Fore.RESET}")
             message = event.message.text
             print(f"{Fore.RED}[WRN] {event.sender_id}: {message}{Fore.RESET}")
-            translator = Translator()
-            message = event.message.text
-            translated_message = translator.translate(message, dest='en').text
-            print(f"{Fore.RED}[WRN] Повідомлення перекладено: {translated_message}{Fore.RESET}")
-            message = 'Imagine that a fan has written to you a message: "%s", but you don\'t want to communicate with them, write a text for reply send me just a text of reply, nothing else' % translated_message
+            message = 'Imagine that a fan has written to you a message: "%s", but you don\'t want to communicate with them, write a text for reply send me just a text of reply, nothing else' % message
             await event.message.mark_read()
             await asyncio.sleep(len(message) * 0.03 + 1)
             response_text = await get_character_ai_response_unk(message)
