@@ -1,6 +1,7 @@
 import asyncio
 import random
 import config
+from datetime import datetime, timedelta
 from telethon import TelegramClient, events, functions
 from characterai import aiocai
 from colorama import Fore
@@ -10,6 +11,8 @@ client = TelegramClient('session_name', config.api_id, config.api_hash)
 characterai_client = aiocai.Client(config.charai_token)
 characterai_client_unk = aiocai.Client(config.charai_token_unk)
 previous_chat_id = config.previous_chat_id
+last_post_date = config.last_post_date
+last_post_text = config.last_post_text
 
 async def get_character_ai_response(message_text):
     global previous_chat_id
@@ -37,7 +40,7 @@ def update_config_file(key, value):
     with open('config.py', 'w') as file:
         for line in lines:
             if line.startswith(key):
-                file.write(f"{key} = '{value}'\n")
+                file.write(f'{key} = "{value}"\n')
             else:
                 file.write(line)
 
@@ -47,6 +50,7 @@ def update_fans_ids_file(fans_ids):
         for fan_id in fans_ids:
             file.write(f'    {fan_id},\n')
         file.write(']\n')
+        
 
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
@@ -100,10 +104,51 @@ async def handler(event):
             await asyncio.sleep(random.randint(1, 5))
             await client(functions.account.UpdateStatusRequest(offline=True))
 
+async def post_daily_message():
+    global last_post_date, last_post_text
+    now = datetime.now()
+
+    if last_post_date != now.date().isoformat():
+        message_for_post = f"Hi Akane, imagine that you have a telegram channel, it's time for a new post for it. Your last post was: '{last_post_text}'"
+        
+        post_text = await get_character_ai_response_unk(message_for_post)
+        await client.send_message(config.tg_channel_id, post_text)
+        print(f"{Fore.GREEN}[POST] Повідомлення відправлено в канал: {post_text}{Fore.RESET}")
+        
+        last_post_date = now.date().isoformat()
+        last_post_text = post_text
+        update_config_file('last_post_date', last_post_date)
+        update_config_file('last_post_text', last_post_text)
+    
+    while True:
+        now = datetime.now()
+        next_post_time = now.replace(hour=random.randint(10, 20), minute=random.randint(0, 59), second=0, microsecond=0)
+        
+        if next_post_time < now:
+            next_post_time += timedelta(days=1)
+        
+        wait_seconds = (next_post_time - now).total_seconds()
+        print(f"{Fore.YELLOW}[LOG] Наступний пост буде о {next_post_time.strftime('%H:%M')} (через {wait_seconds / 3600:.2f} годин){Fore.RESET}")
+        
+        await asyncio.sleep(wait_seconds)
+        
+        message_for_post = f"Hi Akane, imagine that you have a telegram channel, it's time for a new post for it. Your last post was: '{last_post_text}'"
+        
+        post_text = await get_character_ai_response_unk(message_for_post)
+        
+        await client.send_message(config.tg_channel_id, post_text)
+        print(f"{Fore.GREEN}[POST] Повідомлення відправлено в канал: {post_text}{Fore.RESET}")
+        
+        last_post_date = now.date().isoformat()
+        last_post_text = post_text
+        update_config_file('last_post_date', last_post_date)
+        update_config_file('last_post_text', last_post_text)
+
+
 async def main():
     await client.start(config.phone_number)
     print(f"{Fore.YELLOW}[LOG] Клієнт запущений!{Fore.RESET}")
-    await client.run_until_disconnected()
+    await asyncio.gather(client.run_until_disconnected(), post_daily_message())
 
 if __name__ == '__main__':
     asyncio.run(main())
