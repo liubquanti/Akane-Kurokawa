@@ -51,8 +51,29 @@ def update_fans_ids_file(fans_ids):
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
     if event.sender_id == config.tg_id:
-        await asyncio.sleep(random.randint(1, 5))
         message = event.message.text
+        
+        if message == "/stop":
+            print(f"{Fore.YELLOW}[LOG] Видалення повідомлень та створення нового чату...{Fore.RESET}")
+            
+            async for msg in client.iter_messages(event.chat_id):
+                if msg.id != event.message.id:
+                    await msg.delete()
+            
+            me = await characterai_client.get_me()
+            async with await characterai_client.connect() as chat:
+                new_chat, answer = await chat.new_chat(config.char_id, me.id)
+                global previous_chat_id
+                previous_chat_id = new_chat.chat_id
+                update_config_file('previous_chat_id', previous_chat_id)
+            
+            await event.message.delete()
+            
+            confirmation = await event.respond("Чат очищено та створено новий діалог з персонажем!")
+            print(f"{Fore.YELLOW}[LOG] Створено новий чат з ID: {previous_chat_id}{Fore.RESET}")
+            return
+
+        await asyncio.sleep(random.randint(1, 5))
         await event.message.mark_read()
         print (f"{Fore.BLUE}[MSG] Oleh: {message}{Fore.RESET}")
         rtime = len(message) * 0.03
