@@ -69,8 +69,11 @@ async def handler(event):
             
             await event.message.delete()
             
-            confirmation = await event.respond("Чат очищено та створено новий діалог з персонажем!")
+            async with client.action(event.chat_id, 'typing'):
+                await asyncio.sleep(len(answer.text) * 0.1)
+            await event.respond(answer.text)
             print(f"{Fore.YELLOW}[LOG] Створено новий чат з ID: {previous_chat_id}{Fore.RESET}")
+            print(f"{Fore.BLUE}[MSG] Akane: {answer.text}{Fore.RESET}")
             return
 
         await asyncio.sleep(random.randint(1, 5))
