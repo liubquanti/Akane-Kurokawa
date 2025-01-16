@@ -123,7 +123,7 @@ async def handler(event):
 
 async def main():
     await client.start(config.phone_number)
-    print(f"{Fore.YELLOW}[LOG] Клієнт запущений!{Fore.RESET}")
+    print(f"{Fore.YELLOW}[LOG] Модель Akane Kurokawa запущено!{Fore.RESET}")
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
