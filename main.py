@@ -50,9 +50,38 @@ def update_fans_ids_file(fans_ids):
 
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
+    global previous_chat_id
+    
     if event.sender_id == config.tg_id:
         message = event.message.text
         
+        if message.startswith("/change "):
+            new_char_id = message.split(" ")[1]
+            print(f"{Fore.YELLOW}[LOG] Зміна персонажу на {new_char_id}...{Fore.RESET}")
+            
+            update_config_file('char_id', new_char_id)
+            config.char_id = new_char_id
+            
+            async for msg in client.iter_messages(event.chat_id):
+                if msg.id != event.message.id:
+                    await msg.delete()
+
+            me = await characterai_client.get_me()
+            async with await characterai_client.connect() as chat:
+                new_chat, answer = await chat.new_chat(new_char_id, me.id)
+                global previous_chat_id
+                previous_chat_id = new_chat.chat_id
+                update_config_file('previous_chat_id', previous_chat_id)
+            
+            await event.message.delete()
+
+            async with client.action(event.chat_id, 'typing'):
+                await asyncio.sleep(len(answer.text) * 0.1)
+            await event.respond(answer.text)
+            print(f"{Fore.YELLOW}[LOG] Персонажа змінено! Новий чат: {previous_chat_id}{Fore.RESET}")
+            print(f"{Fore.BLUE}[MSG] Character: {answer.text}{Fore.RESET}")
+            return
+
         if message == "/stop":
             print(f"{Fore.YELLOW}[LOG] Видалення повідомлень та створення нового чату...{Fore.RESET}")
             
@@ -63,7 +92,6 @@ async def handler(event):
             me = await characterai_client.get_me()
             async with await characterai_client.connect() as chat:
                 new_chat, answer = await chat.new_chat(config.char_id, me.id)
-                global previous_chat_id
                 previous_chat_id = new_chat.chat_id
                 update_config_file('previous_chat_id', previous_chat_id)
             
