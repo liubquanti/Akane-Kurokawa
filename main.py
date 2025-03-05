@@ -1,6 +1,8 @@
 import asyncio
 import random
 import config
+import time
+from datetime import datetime, timedelta
 from telethon import TelegramClient, events, functions
 from characterai import aiocai
 from colorama import Fore
@@ -10,6 +12,10 @@ client = TelegramClient('session_name', config.api_id, config.api_hash)
 characterai_client = aiocai.Client(config.charai_token)
 characterai_client_unk = aiocai.Client(config.charai_token_unk)
 previous_chat_id = config.previous_chat_id
+last_message_time = datetime.now()
+CHECK_INTERVAL = 3600
+MIN_INACTIVE_TIME = timedelta(hours=16)
+MAX_INACTIVE_TIME = timedelta(hours=30)
 
 async def get_character_ai_response(message_text):
     global previous_chat_id
@@ -48,11 +54,32 @@ def update_fans_ids_file(fans_ids):
             file.write(f'    {fan_id},\n')
         file.write(']\n')
 
+async def check_inactivity():
+    global last_message_time
+    while True:
+        await asyncio.sleep(CHECK_INTERVAL)
+        current_time = datetime.now()
+        inactive_duration = current_time - last_message_time
+        
+        if MIN_INACTIVE_TIME <= inactive_duration <= MAX_INACTIVE_TIME:
+            message = "The user hasn't written to you for a while. You miss them and want to start a conversation. Write a casual message to initiate chat. Write just the message, nothing else."
+            
+            response_text = await get_character_ai_response(message)
+            
+            async with client.action(config.tg_id, 'typing'):
+                ttime = len(response_text) * 0.1
+                await asyncio.sleep(ttime)
+            
+            await client.send_message(config.tg_id, response_text)
+            print(f"{Fore.BLUE}[MSG] Akane (Initiative): {response_text}{Fore.RESET}")
+            last_message_time = current_time
+
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
-    global previous_chat_id
+    global previous_chat_id, last_message_time
     
     if event.sender_id == config.tg_id:
+        last_message_time = datetime.now()
         message = event.message.text
         
         if message.startswith("/change "):
@@ -155,6 +182,9 @@ async def handler(event):
 async def main():
     await client.start(config.phone_number)
     print(f"{Fore.YELLOW}[LOG] Модель Akane Kurokawa запущено!{Fore.RESET}")
+    
+    asyncio.create_task(check_inactivity())
+    
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
