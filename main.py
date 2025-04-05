@@ -15,8 +15,8 @@ characterai_client_unk = aiocai.Client(config.charai_token_unk)
 previous_chat_id = config.previous_chat_id
 last_message_time = datetime.now()
 CHECK_INTERVAL = 3600
-MIN_INACTIVE_TIME = timedelta(hours=16)
-MAX_INACTIVE_TIME = timedelta(hours=30)
+MIN_INACTIVE_TIME = timedelta(hours=28)
+MAX_INACTIVE_TIME = timedelta(hours=40)
 
 translator = Translator()
 
