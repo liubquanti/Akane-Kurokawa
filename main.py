@@ -14,8 +14,8 @@ characterai_client_unk = aiocai.Client(config.charai_token_unk)
 previous_chat_id = config.previous_chat_id
 last_message_time = datetime.now()
 CHECK_INTERVAL = 3600
-MIN_INACTIVE_TIME = timedelta(hours=16)
-MAX_INACTIVE_TIME = timedelta(hours=30)
+MIN_INACTIVE_TIME = timedelta(hours=46)
+MAX_INACTIVE_TIME = timedelta(hours=80)
 
 async def get_character_ai_response(message_text):
     global previous_chat_id
