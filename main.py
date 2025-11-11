@@ -7,7 +7,6 @@ from telethon import TelegramClient, events, functions
 from characterai import aiocai
 from colorama import Fore
 from fanblock import fans_ids
-from googletrans import Translator
 
 client = TelegramClient('session_name', config.api_id, config.api_hash)
 characterai_client = aiocai.Client(config.charai_token)
@@ -18,33 +17,26 @@ CHECK_INTERVAL = 3600
 MIN_INACTIVE_TIME = timedelta(hours=28)
 MAX_INACTIVE_TIME = timedelta(hours=40)
 
-translator = Translator()
-
 async def get_character_ai_response(message_text):
     global previous_chat_id
-    
-    translated_message = translator.translate(message_text, dest='ru').text
-    print(f"{Fore.YELLOW}[LOG] Translated message: {translated_message}{Fore.RESET}")
-    
+
     me = await characterai_client.get_me()
     async with await characterai_client.connect() as chat:
         if previous_chat_id:
-            response = await chat.send_message(config.char_id, previous_chat_id, translated_message)
+            response = await chat.send_message(config.char_id, previous_chat_id, message_text)
         else:
             new_chat, answer = await chat.new_chat(config.char_id, me.id)
             previous_chat_id = new_chat.chat_id
             update_config_file('previous_chat_id', previous_chat_id)
-            response = await chat.send_message(config.char_id, previous_chat_id, translated_message)
+            response = await chat.send_message(config.char_id, previous_chat_id, message_text)
         return response.text
 
 async def get_character_ai_response_unk(message_text):
-    translated_message = translator.translate(message_text, dest='ru').text
-    print(f"{Fore.YELLOW}[LOG] Translated message: {translated_message}{Fore.RESET}")
-    
+
     me = await characterai_client_unk.get_me()
     async with await characterai_client_unk.connect() as chat:
         new_chat, answer = await chat.new_chat(config.char_id, me.id)
-        response = await chat.send_message(config.char_id, new_chat.chat_id, translated_message)
+        response = await chat.send_message(config.char_id, new_chat.chat_id, message_text)
         return response.text
 
 def update_config_file(key, value):
