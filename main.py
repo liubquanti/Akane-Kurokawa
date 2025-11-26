@@ -4,17 +4,17 @@ import config
 import time
 from datetime import datetime, timedelta
 from telethon import TelegramClient, events, functions
-from characterai import aiocai
+from PyCharacterAI import get_client
+from PyCharacterAI.exceptions import SessionClosedError
 from colorama import Fore
 from fanblock import fans_ids
-from googletrans import Translator
 
 client = TelegramClient('session_name', config.api_id, config.api_hash)
-characterai_client = aiocai.Client(config.charai_token)
-characterai_client_unk = aiocai.Client(config.charai_token_unk)
-previous_chat_id = config.previous_chat_id
+characterai_client = None
+previous_chat_id = None
 last_message_time = datetime.now()
 CHECK_INTERVAL = 3600
+<<<<<<< HEAD
 MIN_INACTIVE_TIME = timedelta(hours=46)
 MAX_INACTIVE_TIME = timedelta(hours=80)
 
@@ -44,6 +44,32 @@ async def get_character_ai_response_unk(message_text):
         translated_response = translator.translate(response.text, dest='ru').text
         print(f"{Fore.YELLOW}[LOG] Translated response: {translated_response}{Fore.RESET}")
         return translated_response
+=======
+MIN_INACTIVE_TIME = timedelta(hours=28)
+MAX_INACTIVE_TIME = timedelta(hours=40)
+
+async def initialize_characterai_client():
+    global characterai_client, previous_chat_id
+    characterai_client = await get_client(token=config.charai_token)
+    previous_chat_id = config.previous_chat_id
+
+async def get_character_ai_response(message_text):
+    global previous_chat_id
+
+    try:
+        if previous_chat_id:
+            answer = await characterai_client.chat.send_message(config.char_id, previous_chat_id, message_text)
+        else:
+            chat, greeting_message = await characterai_client.chat.create_chat(config.char_id)
+            previous_chat_id = chat.chat_id
+            update_config_file('previous_chat_id', previous_chat_id)
+            answer = await characterai_client.chat.send_message(config.char_id, previous_chat_id, message_text)
+        return answer.get_primary_candidate().text
+    except SessionClosedError:
+        print("[ERROR] CharacterAI session closed. Reinitializing...")
+        await initialize_characterai_client()
+        return await get_character_ai_response(message_text)
+>>>>>>> 782a6366b87497a78ce8176ac8a88905fc17e4c8
 
 def update_config_file(key, value):
     with open('config.py', 'r') as file:
@@ -68,16 +94,16 @@ async def check_inactivity():
         await asyncio.sleep(CHECK_INTERVAL)
         current_time = datetime.now()
         inactive_duration = current_time - last_message_time
-        
+
         if MIN_INACTIVE_TIME <= inactive_duration <= MAX_INACTIVE_TIME:
             message = "The user hasn't written to you for a while. You miss them and want to start a conversation. Write a casual message to initiate chat. Write just the message, nothing else."
-            
+
             response_text = await get_character_ai_response(message)
-            
+
             async with client.action(config.tg_id, 'typing'):
                 ttime = len(response_text) * 0.1
                 await asyncio.sleep(ttime)
-            
+
             await client.send_message(config.tg_id, response_text)
             print(f"{Fore.BLUE}[MSG] Akane (Initiative): {response_text}{Fore.RESET}")
             last_message_time = current_time
@@ -85,54 +111,57 @@ async def check_inactivity():
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
     global previous_chat_id, last_message_time
-    
+
     if event.sender_id == config.tg_id:
         last_message_time = datetime.now()
         message = event.message.text
-        
+
         if message.startswith("/change "):
             new_char_id = message.split(" ")[1]
             print(f"{Fore.YELLOW}[LOG] Зміна персонажу на {new_char_id}...{Fore.RESET}")
-            
+
             update_config_file('char_id', new_char_id)
             config.char_id = new_char_id
-            
+
             async for msg in client.iter_messages(event.chat_id):
                 if msg.id != event.message.id:
                     await msg.delete()
 
-            me = await characterai_client.get_me()
-            async with await characterai_client.connect() as chat:
-                new_chat, answer = await chat.new_chat(new_char_id, me.id)
-                global previous_chat_id
-                previous_chat_id = new_chat.chat_id
-                update_config_file('previous_chat_id', previous_chat_id)
-            
+            chat, greeting_message = await characterai_client.chat.create_chat(new_char_id)
+            previous_chat_id = chat.chat_id
+            update_config_file('previous_chat_id', previous_chat_id)
+
             await event.message.delete()
 
             translated_answer = translator.translate(answer.text, dest='ru').text
             
             async with client.action(event.chat_id, 'typing'):
+<<<<<<< HEAD
                 await asyncio.sleep(len(translated_answer) * 0.1)
             await event.respond(translated_answer)
             print(f"{Fore.YELLOW}[LOG] Персонажа змінено! Новий чат: {previous_chat_id}{Fore.RESET}")
             print(f"{Fore.BLUE}[MSG] Character: {translated_answer}{Fore.RESET}")
+=======
+                await asyncio.sleep(len(greeting_message.get_primary_candidate().text) * 0.1)
+            await event.respond(greeting_message.get_primary_candidate().text)
+            print(f"{Fore.YELLOW}[LOG] Персонажа змінено! Новий чат: {previous_chat_id}{Fore.RESET}")
+            print(f"{Fore.BLUE}[MSG] Character: {greeting_message.get_primary_candidate().text}{Fore.RESET}")
+>>>>>>> 782a6366b87497a78ce8176ac8a88905fc17e4c8
             return
 
         if message == "/stop":
             print(f"{Fore.YELLOW}[LOG] Видалення повідомлень та створення нового чату...{Fore.RESET}")
-            
+
             async for msg in client.iter_messages(event.chat_id):
                 if msg.id != event.message.id:
                     await msg.delete()
-            
-            me = await characterai_client.get_me()
-            async with await characterai_client.connect() as chat:
-                new_chat, answer = await chat.new_chat(config.char_id, me.id)
-                previous_chat_id = new_chat.chat_id
-                update_config_file('previous_chat_id', previous_chat_id)
-            
+
+            chat, greeting_message = await characterai_client.chat.create_chat(config.char_id)
+            previous_chat_id = chat.chat_id
+            update_config_file('previous_chat_id', previous_chat_id)
+
             await event.message.delete()
+<<<<<<< HEAD
             
             translated_answer = translator.translate(answer.text, dest='ru').text
             
@@ -141,6 +170,14 @@ async def handler(event):
             await event.respond(translated_answer)
             print(f"{Fore.YELLOW}[LOG] Створено новий чат з ID: {previous_chat_id}{Fore.RESET}")
             print(f"{Fore.BLUE}[MSG] Akane: {translated_answer}{Fore.RESET}")
+=======
+
+            async with client.action(event.chat_id, 'typing'):
+                await asyncio.sleep(len(greeting_message.get_primary_candidate().text) * 0.1)
+            await event.respond(greeting_message.get_primary_candidate().text)
+            print(f"{Fore.YELLOW}[LOG] Створено новий чат з ID: {previous_chat_id}{Fore.RESET}")
+            print(f"{Fore.BLUE}[MSG] Akane: {greeting_message.get_primary_candidate().text}{Fore.RESET}")
+>>>>>>> 782a6366b87497a78ce8176ac8a88905fc17e4c8
             return
 
         await asyncio.sleep(random.randint(1, 5))
@@ -183,7 +220,7 @@ async def handler(event):
             message = 'Imagine that a fan has written to you a message: "%s", but you don\'t want to communicate with them, write a text for reply send me just a text of reply, nothing else' % message
             await event.message.mark_read()
             await asyncio.sleep(len(message) * 0.03 + 1)
-            response_text = await get_character_ai_response_unk(message)
+            response_text = await get_character_ai_response(message)
             async with client.action(event.chat_id, 'typing'):
                 await asyncio.sleep(len(response_text) * 0.1 + 1)
             await event.reply(response_text)
@@ -192,11 +229,12 @@ async def handler(event):
             await client(functions.account.UpdateStatusRequest(offline=True))
 
 async def main():
+    await initialize_characterai_client()
     await client.start(config.phone_number)
     print(f"{Fore.YELLOW}[LOG] Модель Akane Kurokawa запущено!{Fore.RESET}")
-    
+
     asyncio.create_task(check_inactivity())
-    
+
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
