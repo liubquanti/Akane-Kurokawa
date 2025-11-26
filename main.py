@@ -14,7 +14,6 @@ characterai_client = None
 previous_chat_id = None
 last_message_time = datetime.now()
 CHECK_INTERVAL = 3600
-<<<<<<< HEAD
 MIN_INACTIVE_TIME = timedelta(hours=46)
 MAX_INACTIVE_TIME = timedelta(hours=80)
 
@@ -44,32 +43,6 @@ async def get_character_ai_response_unk(message_text):
         translated_response = translator.translate(response.text, dest='ru').text
         print(f"{Fore.YELLOW}[LOG] Translated response: {translated_response}{Fore.RESET}")
         return translated_response
-=======
-MIN_INACTIVE_TIME = timedelta(hours=28)
-MAX_INACTIVE_TIME = timedelta(hours=40)
-
-async def initialize_characterai_client():
-    global characterai_client, previous_chat_id
-    characterai_client = await get_client(token=config.charai_token)
-    previous_chat_id = config.previous_chat_id
-
-async def get_character_ai_response(message_text):
-    global previous_chat_id
-
-    try:
-        if previous_chat_id:
-            answer = await characterai_client.chat.send_message(config.char_id, previous_chat_id, message_text)
-        else:
-            chat, greeting_message = await characterai_client.chat.create_chat(config.char_id)
-            previous_chat_id = chat.chat_id
-            update_config_file('previous_chat_id', previous_chat_id)
-            answer = await characterai_client.chat.send_message(config.char_id, previous_chat_id, message_text)
-        return answer.get_primary_candidate().text
-    except SessionClosedError:
-        print("[ERROR] CharacterAI session closed. Reinitializing...")
-        await initialize_characterai_client()
-        return await get_character_ai_response(message_text)
->>>>>>> 782a6366b87497a78ce8176ac8a88905fc17e4c8
 
 def update_config_file(key, value):
     with open('config.py', 'r') as file:
@@ -136,17 +109,10 @@ async def handler(event):
             translated_answer = translator.translate(answer.text, dest='ru').text
             
             async with client.action(event.chat_id, 'typing'):
-<<<<<<< HEAD
                 await asyncio.sleep(len(translated_answer) * 0.1)
             await event.respond(translated_answer)
             print(f"{Fore.YELLOW}[LOG] Персонажа змінено! Новий чат: {previous_chat_id}{Fore.RESET}")
             print(f"{Fore.BLUE}[MSG] Character: {translated_answer}{Fore.RESET}")
-=======
-                await asyncio.sleep(len(greeting_message.get_primary_candidate().text) * 0.1)
-            await event.respond(greeting_message.get_primary_candidate().text)
-            print(f"{Fore.YELLOW}[LOG] Персонажа змінено! Новий чат: {previous_chat_id}{Fore.RESET}")
-            print(f"{Fore.BLUE}[MSG] Character: {greeting_message.get_primary_candidate().text}{Fore.RESET}")
->>>>>>> 782a6366b87497a78ce8176ac8a88905fc17e4c8
             return
 
         if message == "/stop":
@@ -161,7 +127,6 @@ async def handler(event):
             update_config_file('previous_chat_id', previous_chat_id)
 
             await event.message.delete()
-<<<<<<< HEAD
             
             translated_answer = translator.translate(answer.text, dest='ru').text
             
@@ -170,14 +135,6 @@ async def handler(event):
             await event.respond(translated_answer)
             print(f"{Fore.YELLOW}[LOG] Створено новий чат з ID: {previous_chat_id}{Fore.RESET}")
             print(f"{Fore.BLUE}[MSG] Akane: {translated_answer}{Fore.RESET}")
-=======
-
-            async with client.action(event.chat_id, 'typing'):
-                await asyncio.sleep(len(greeting_message.get_primary_candidate().text) * 0.1)
-            await event.respond(greeting_message.get_primary_candidate().text)
-            print(f"{Fore.YELLOW}[LOG] Створено новий чат з ID: {previous_chat_id}{Fore.RESET}")
-            print(f"{Fore.BLUE}[MSG] Akane: {greeting_message.get_primary_candidate().text}{Fore.RESET}")
->>>>>>> 782a6366b87497a78ce8176ac8a88905fc17e4c8
             return
 
         await asyncio.sleep(random.randint(1, 5))
