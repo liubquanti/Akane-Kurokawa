@@ -8,6 +8,8 @@ from PyCharacterAI import get_client
 from PyCharacterAI.exceptions import SessionClosedError
 from colorama import Fore
 from fanblock import fans_ids
+from telethon.tl.functions.messages import GetStickerSetRequest
+from telethon.tl.types import InputStickerSetShortName, InputDocument
 
 client = TelegramClient('session_name', config.api_id, config.api_hash)
 characterai_client = None
@@ -22,22 +24,23 @@ async def initialize_characterai_client():
     characterai_client = await get_client(token=config.charai_token)
     previous_chat_id = config.previous_chat_id
 
-async def get_character_ai_response(message_text):
+async def get_character_ai_response(message_text, message_time):
     global previous_chat_id
 
     try:
+        formatted_message = f"{message_text}\n*Message time: {message_time}*\n*You can send a sticker to the person you are chatting with, if appropriate. To do this, add one of the following emojis at the end of your message 😊, 😂, ❤️*"
         if previous_chat_id:
-            answer = await characterai_client.chat.send_message(config.char_id, previous_chat_id, message_text)
+            answer = await characterai_client.chat.send_message(config.char_id, previous_chat_id, formatted_message)
         else:
             chat, greeting_message = await characterai_client.chat.create_chat(config.char_id)
             previous_chat_id = chat.chat_id
             update_config_file('previous_chat_id', previous_chat_id)
-            answer = await characterai_client.chat.send_message(config.char_id, previous_chat_id, message_text)
+            answer = await characterai_client.chat.send_message(config.char_id, previous_chat_id, formatted_message)
         return answer.get_primary_candidate().text
     except SessionClosedError:
         print("[ERROR] CharacterAI session closed. Reinitializing...")
         await initialize_characterai_client()
-        return await get_character_ai_response(message_text)
+        return await get_character_ai_response(message_text, message_time)
 
 def update_config_file(key, value):
     with open('config.py', 'r') as file:
@@ -76,6 +79,33 @@ async def check_inactivity():
             print(f"{Fore.BLUE}[MSG] Akane (Initiative): {response_text}{Fore.RESET}")
             last_message_time = current_time
 
+async def send_sticker_by_emoji(chat_id, emoji):
+    try:
+        # Отримуємо стікерпак
+        sticker_set = await client(GetStickerSetRequest(
+            stickerset=InputStickerSetShortName('akane_by_pinterest_to_stickerbot'),
+            hash=0
+        ))
+
+        # Шукаємо стікер за емодзі
+        for document in sticker_set.documents:
+            for attribute in document.attributes:
+                if hasattr(attribute, 'alt') and emoji in attribute.alt:  # Перевіряємо емодзі
+                    # Відправляємо стікер
+                    await client.send_file(chat_id, InputDocument(
+                        id=document.id,
+                        access_hash=document.access_hash,
+                        file_reference=document.file_reference
+                    ))
+                    print(f"{Fore.GREEN}[LOG] Стікер з емодзі '{emoji}' відправлено.{Fore.RESET}")
+                    return True
+
+        print(f"{Fore.RED}[WRN] Стікера з емодзі '{emoji}' не знайдено в паку.{Fore.RESET}")
+        return False
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] Помилка при відправці стікера: {e}{Fore.RESET}")
+        return False
+
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
     global previous_chat_id, last_message_time
@@ -83,6 +113,7 @@ async def handler(event):
     if event.sender_id == config.tg_id:
         last_message_time = datetime.now()
         message = event.message.text
+        message_time = event.message.date.strftime("%Y-%m-%d %H:%M:%S")
 
         if message.startswith("/change "):
             new_char_id = message.split(" ")[1]
@@ -128,22 +159,48 @@ async def handler(event):
             print(f"{Fore.BLUE}[MSG] Akane: {greeting_message.get_primary_candidate().text}{Fore.RESET}")
             return
 
+        # Перевіряємо, чи є емодзі в кінці повідомлення
+        if len(message) > 0 and message[-1] in ["😊", "😂", "❤️"]:  # Додайте потрібні емодзі
+            emoji = message[-1]
+            print(f"[DEBUG] Знайдено емодзі: {emoji}. Виклик send_sticker_by_emoji...")
+            if await send_sticker_by_emoji(event.chat_id, emoji):
+                print(f"[DEBUG] Стікер успішно відправлено для емодзі: {emoji}")
+                return
+            else:
+                print(f"[DEBUG] Не вдалося відправити стікер для емодзі: {emoji}")
+
         await asyncio.sleep(random.randint(1, 5))
         await event.message.mark_read()
-        print (f"{Fore.BLUE}[MSG] Oleh: {message}{Fore.RESET}")
+        print(f"{Fore.BLUE}[MSG] Oleh: {message}{Fore.RESET}")
         rtime = len(message) * 0.03
         await asyncio.sleep(rtime)
-        print (f"{Fore.YELLOW}[LOG] Час читання: {rtime:.2f}{Fore.RESET}")
-        response_text = await get_character_ai_response(message)
+        print(f"{Fore.YELLOW}[LOG] Час читання: {rtime:.2f}{Fore.RESET}")
+        response_text = await get_character_ai_response(message, message_time)
+
+        # Перевіряємо, чи є емодзі в повідомленні нейромережі
+        for emoji in ["😊", "😂", "❤️"]:  # Додайте потрібні емодзі
+            if emoji in response_text:
+                async with client.action(event.chat_id, 'typing'):
+                    ttime = len(response_text) * 0.1
+                    await asyncio.sleep(ttime)
+                print(f"{Fore.YELLOW}[LOG] Час написання: {ttime:.2f}{Fore.RESET}")
+                await client.send_message(event.chat_id, response_text)
+                print(f"{Fore.BLUE}[MSG] Akane: {response_text}{Fore.RESET}")
+                if await send_sticker_by_emoji(event.chat_id, emoji):
+                    return
+                else:
+                    print(f"{Fore.RED}[WRN] Не вдалося відправити стікер для емодзі: {emoji}{Fore.RESET}")
+                return
+
         async with client.action(event.chat_id, 'typing'):
             ttime = len(response_text) * 0.1
             await asyncio.sleep(ttime)
-        print (f"{Fore.YELLOW}[LOG] Час написання: {ttime:.2f}{Fore.RESET}")
+        print(f"{Fore.YELLOW}[LOG] Час написання: {ttime:.2f}{Fore.RESET}")
         if random.random() < 0.25:
             await event.reply(response_text)
         else:
             await client.send_message(event.chat_id, response_text)
-        print (f"{Fore.BLUE}[MSG] Akane: {response_text}{Fore.RESET}")
+        print(f"{Fore.BLUE}[MSG] Akane: {response_text}{Fore.RESET}")
         await asyncio.sleep(random.randint(1, 5))
         await client(functions.account.UpdateStatusRequest(offline=True))
     else:
