@@ -67,7 +67,7 @@ async def check_inactivity():
         inactive_duration = current_time - last_message_time
 
         if MIN_INACTIVE_TIME <= inactive_duration <= MAX_INACTIVE_TIME:
-            message = "The user hasn't written to you for a while. You miss them and want to start a conversation. Write a casual message to initiate chat. Write just the message, nothing else."
+            message = "*The user hasn't written to you for a while. You miss them and want to start a conversation. Write a casual message to initiate chat. Write just the message, nothing else.*"
 
             response_text = await get_character_ai_response(message)
 
